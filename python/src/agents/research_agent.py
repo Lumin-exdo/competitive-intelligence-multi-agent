@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import json
 import logging
 from typing import Any
@@ -40,6 +41,7 @@ class ResearchAgent:
             temperature=config.llm.temperature,
             max_tokens=config.llm.max_tokens,
         )
+        self.search_api_key = os.getenv("SERPAPI_KEY", "") # 传入API_key
 
     async def analyze(
         self,
@@ -56,7 +58,7 @@ class ResearchAgent:
         user_msg = (
             f"Competitor: {competitor}\n\n"
             f"Detected Changes:\n{changes_summary}\n\n"
-            f"Web Search Results:\n{json.dumps(search_results, ensure_ascii=False, indent=2)}\n\n"
+            f"Web Search Results:\n{json.dumps(search_results, ensure_ascii=False, indent=2, default=str)}\n\n"
             "Provide deep research insights as JSON."
         )
 
@@ -94,8 +96,8 @@ class ResearchAgent:
         ]
         results: dict[str, list] = {}
         for q in queries:
-            results[q] = await web_search(q)
-        results["news"] = await news_search(competitor)
+            results[q] = await web_search(q, api_key=self.search_api_key)
+        results["news"] = await news_search(competitor, api_key=self.search_api_key)
         return results
 
     @staticmethod

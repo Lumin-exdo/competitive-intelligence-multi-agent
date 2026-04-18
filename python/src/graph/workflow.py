@@ -115,8 +115,8 @@ async def quality_check(state: dict[str, Any]) -> dict[str, Any]:
         "  - Completeness (are strengths/weaknesses/objections covered?)\n"
         "  - Accuracy (does it align with the comparison data?)\n"
         "  - Actionability (can a sales rep use this immediately?)\n\n"
-        f"Battlecard:\n{json.dumps(battlecard, ensure_ascii=False, indent=2)}\n\n"
-        f"Comparison Matrix:\n{json.dumps(comparison, ensure_ascii=False, indent=2)}\n\n"
+        f"Battlecard:\n{json.dumps(battlecard, ensure_ascii=False, indent=2, default=str)}\n\n"
+        f"Comparison Matrix:\n{json.dumps(comparison, ensure_ascii=False, indent=2, default=str)}\n\n"
         "Return ONLY a JSON object: {\"score\": <float>, \"feedback\": <string>}"
     )
 

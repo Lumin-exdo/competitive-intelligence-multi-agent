@@ -60,7 +60,7 @@ class CompareAgent:
         competitor: str,
         research_results: list[dict],
     ) -> ComparisonMatrix:
-        research_text = json.dumps(research_results, ensure_ascii=False, indent=2)
+        research_text = json.dumps(research_results, ensure_ascii=False, indent=2, default=str)
 
         user_msg = (
             f"Competitor: {competitor}\n\n"

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, date
 import logging
 from typing import Any
 
@@ -51,8 +52,8 @@ class BattlecardAgent:
     ) -> Battlecard:
         user_msg = (
             f"Competitor: {competitor}\n\n"
-            f"Comparison Matrix:\n{json.dumps(comparison, ensure_ascii=False, indent=2)}\n\n"
-            f"Research Insights:\n{json.dumps(research, ensure_ascii=False, indent=2)}\n\n"
+            f"Comparison Matrix:\n{json.dumps(comparison, ensure_ascii=False, indent=2, default=str)}\n\n"
+            f"Research Insights:\n{json.dumps(research, ensure_ascii=False, indent=2, default=str)}\n\n"
             "Generate a battlecard as JSON."
         )
 
