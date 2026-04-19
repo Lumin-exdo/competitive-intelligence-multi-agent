@@ -11,30 +11,25 @@ Architecture
               │ Monitor Agent  │  (detects changes)
               └────────┬───────┘
                        │
-              ┌────────┴───────┐
-              ▼                ▼
-      ┌──────────────┐  ┌───────────────┐
-      │ Alert Agent  │  │ Research Agent │  (parallel fan-out)
-      └──────────────┘  └───────┬───────┘
-                                ▼
-                      ┌─────────────────┐
-                      │ Compare Agent   │
-                      └────────┬────────┘
-                               ▼
-                     ┌──────────────────┐
-                     │ Battlecard Agent │
-                     └────────┬─────────┘
-                              ▼
-                     ┌──────────────────┐
-                     │ Quality Check    │  (Reflexion gate)
-                     └────────┬─────────┘
-                       ┌──────┴──────┐
-                 score < 7      score >= 7
-                       │             │
-                       ▼             ▼
-               ┌──────────┐    ┌─────┐
-               │ Research  │    │ END │
-               └──────────┘    └─────┘
+              ┌────────┴────────────┐
+              ▼                     ▼
+           [END]            ┌──────────────┐
+        (无变化)             │ Alert Agent  │
+                            └──────┬───────┘
+                                   ▼
+                            ┌───────────────┐
+                            │ Research Agent│
+                            └───────┬───────┘                              ▼
+                            ┌──────────────────┐
+                            │ Quality Check    │  (Reflexion gate)
+                            └────────┬─────────┘
+                            ┌──────┴──────┐
+                        score < 7      score >= 7
+                            │             │
+                            ▼             ▼
+                    ┌──────────┐    ┌─────┐
+                    │ Research │    │ END │
+                    └──────────┘    └─────┘
 """
 
 from __future__ import annotations
@@ -156,6 +151,10 @@ def _should_retry(state: dict[str, Any]) -> str:
         return "research"
     return END
 
+def _monitor_router(state):
+    if not state.get("changes_detected"):
+        return "end"
+    return "continue"
 
 # ---------------------------------------------------------------------------
 # Build the graph
@@ -174,14 +173,22 @@ def build_pipeline() -> StateGraph:
 
     graph.set_entry_point("monitor")
 
-    graph.add_edge("monitor", "alert")
-    graph.add_edge("monitor", "research")
+    graph.add_conditional_edges(         # ← 替换原来的add_edge("monitor","alert")
+        "monitor", #起始节点
+        _monitor_router, #路由逻辑函数
+        {"continue": "alert", "end": END} # 映射字典，{返回值：下一个节点名称}
+    )
+    # graph.add_conditional_edges(
+    #     "monitor",
+    #     _monitor_router,
+    #     {"continue": "research", "end": END}
+    # )
 
-    graph.add_edge("alert", END)
+    # graph.add_edge("alert", END)
+    graph.add_edge("alert", "research")  # alert完接research
     graph.add_edge("research", "compare")
     graph.add_edge("compare", "battlecard")
     graph.add_edge("battlecard", "quality_check")
-
     graph.add_conditional_edges("quality_check", _should_retry)
 
     return graph.compile()
