@@ -62,6 +62,7 @@ class AppConfig:
     monitor_interval_minutes: int = int(os.getenv("MONITOR_INTERVAL_MINUTES", "60"))
     quality_threshold: float = float(os.getenv("QUALITY_THRESHOLD", "7.0"))
     max_reflexion_retries: int = int(os.getenv("MAX_REFLEXION_RETRIES", "3"))
+    monitor_confidence_threshold: float = float(os.getenv("MONITOR_CONFIDENCE_THRESHOLD", "0.5"))
 
 
 config = AppConfig()

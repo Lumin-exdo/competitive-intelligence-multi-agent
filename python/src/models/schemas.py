@@ -43,6 +43,7 @@ class CompetitorChange(BaseModel):
     severity: Severity = Severity.MEDIUM
     detected_at: datetime = Field(default_factory=datetime.utcnow)
     raw_data: dict = Field(default_factory=dict)
+    confidence: float = 1.0 # 默认1.0，向后兼容。只有monitor和alert用这个类，所以可以直接在这里改。
 
 
 class MonitorResult(BaseModel):

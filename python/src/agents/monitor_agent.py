@@ -36,7 +36,11 @@ competitor.  Given the OLD snapshot and NEW snapshot, identify:
 
 Return your findings as a JSON array of objects with keys:
   change_type (pricing | product | hiring | news),
-  title, summary, severity (low | medium | high | critical), url.
+  title, summary, severity (low | medium | high | critical), url,
+  confidence (float 0.0-1.0, your trust in this finding based on content quality:
+    1.0 = clear, well-structured page with unambiguous changes,
+    0.5 = page content is partial, ambiguous, or hard to interpret,
+    0.1 = page appears to be an error page, captcha, login wall, or irrelevant content).
 
 If there are NO meaningful changes, return an empty array: []
 """
@@ -154,6 +158,10 @@ class MonitorAgent:
 
         results = []
         for item in items if isinstance(items, list) else [items]:
+            confidence = float(item.get("confidence", 1.0))
+            if confidence < config.monitor_confidence_threshold:
+                logger.warning("Low confidence change filtered: %s (%.2f)", item.get("title"), confidence)
+                continue
             results.append(
                 CompetitorChange(
                     competitor=competitor,
@@ -162,6 +170,7 @@ class MonitorAgent:
                     summary=item.get("summary", ""),
                     url=item.get("url", url),
                     severity=item.get("severity", "medium"),
+                    confidence=confidence,
                     detected_at=datetime.utcnow(),
                 )
             )
